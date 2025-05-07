@@ -1,0 +1,64 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Parámetros del circuito
+R = 1000      # Ohmios
+C = 0.001     # Faradios
+V_fuente = 5  # Voltios
+
+# Función derivada: dV/dt
+def f(t, V):
+    return (1 / (R * C)) * (V_fuente - V)
+
+# Condiciones iniciales
+t0 = 0
+V0 = 0
+tf = 5
+n = 20
+h = (tf - t0) / n
+
+# Inicialización
+t_vals = [t0]
+V_euler = [V0]
+
+# Método de Euler
+t = t0
+V = V0
+for i in range(n):
+    V = V + h * f(t, V)
+    t = t + h
+    t_vals.append(t)
+    V_euler.append(V)
+
+# Solución analítica
+t_vals_np = np.array(t_vals)
+V_exacta = V_fuente * (1 - np.exp(-t_vals_np / (R * C)))
+
+# Crear DataFrame con los resultados
+df = pd.DataFrame({
+    "t": t_vals,
+    "V_euler": V_euler,
+    "V_exacta": V_exacta,
+    "Error_absoluto": np.abs(np.array(V_euler) - V_exacta)
+})
+
+# Guardar CSV
+csv_path = "rc_euler_vs_analitica.csv"
+df.to_csv(csv_path, index=False)
+
+# Mostrar tabla
+print(df)
+
+# Graficar
+plt.figure(figsize=(8, 5))
+plt.plot(t_vals, V_euler, 'o-', label='Euler', color='blue')
+plt.plot(t_vals, V_exacta, 's--', label='Analítica', color='green')
+plt.title("Carga de un capacitor: Método de Euler vs Solución Analítica")
+plt.xlabel("Tiempo t (s)")
+plt.ylabel("Voltaje V(t) (V)")
+plt.grid(True)
+plt.legend()
+image_path = "rc_carga_comparacion.png"
+plt.savefig(image_path)
+plt.show()
