@@ -1,0 +1,62 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Parámetros del problema
+T0 = 90       # Temperatura inicial (°C)
+T_amb = 25    # Temperatura ambiente (°C)
+k = 0.07      # Constante de enfriamiento
+t0, tf = 0, 30  # Intervalo de tiempo (minutos)
+n = 30         # Número de pasos
+
+# Paso de integración
+h = (tf - t0) / n
+
+# Definición de la EDO: dT/dt = -k(T - T_amb)
+def f(t, T):
+    return -k * (T - T_amb)
+
+# Solución analítica
+def T_analitica(t):
+    return T_amb + (T0 - T_amb) * np.exp(-k * t)
+
+# Listas para almacenar resultados
+t_vals = [t0]
+T_vals = [T0]
+T_exacta = [T_analitica(t0)]
+
+# Método de Euler
+t = t0
+T = T0
+for _ in range(n):
+    T = T + h * f(t, T)
+    t = t + h
+    t_vals.append(t)
+    T_vals.append(T)
+    T_exacta.append(T_analitica(t))
+
+# Guardar resultados en un DataFrame y exportar a CSV
+data = {
+    "t": t_vals,
+    "T_aproximada": T_vals,
+    "T_analitica": T_exacta
+}
+df = pd.DataFrame(data)
+csv_path = '/mnt/data/enfriamiento_euler.csv'
+df.to_csv(csv_path, index=False)
+
+# Graficar los resultados
+plt.figure(figsize=(8, 5))
+plt.plot(t_vals, T_vals, 'o-', label='Método de Euler', color='blue')
+plt.plot(t_vals, T_exacta, '-', label='Solución Analítica', color='green')
+plt.title('Enfriamiento de un cuerpo (Ley de Newton)')
+plt.xlabel('Tiempo (minutos)')
+plt.ylabel('Temperatura (°C)')
+plt.grid(True)
+plt.legend()
+image_path = '/mnt/data/enfriamiento_euler_vs_analitica.png'
+plt.savefig(image_path)
+plt.show()
+
+# Devolver rutas de los archivos generados
+csv_path, image_path
