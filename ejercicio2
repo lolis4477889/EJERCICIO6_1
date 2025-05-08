@@ -1,0 +1,58 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Parámetros del problema
+g = 9.81  # gravedad (m/s^2)
+m = 2     # masa (kg)
+k = 0.5   # coeficiente de fricción (kg/s)
+v0 = 0    # condición inicial
+t0, tf = 0, 10  # intervalo de tiempo (s)
+n = 50          # número de pasos
+
+# Paso de integración
+h = (tf - t0) / n
+
+# Definición de la EDO: dv/dt = g - (k/m)v
+def f(t, v):
+    return g - (k / m) * v
+
+# Solución analítica
+def v_analitica(t):
+    return (m * g / k) * (1 - np.exp(-k * t / m))
+
+# Listas para almacenar resultados
+t_vals = [t0]
+v_vals = [v0]
+v_exacta = [v_analitica(t0)]
+
+# Método de Euler
+t = t0
+v = v0
+for _ in range(n):
+    v = v + h * f(t, v)
+    t = t + h
+    t_vals.append(t)
+    v_vals.append(v)
+    v_exacta.append(v_analitica(t))
+
+# Guardar resultados en un DataFrame y exportar a CSV
+data = {
+    "t": t_vals,
+    "v_aproximada": v_vals,
+    "v_analitica": v_exacta
+}
+df = pd.DataFrame(data)
+df.to_csv('caida_libre_euler.csv', index=False)
+
+# Graficar los resultados
+plt.figure(figsize=(8, 5))
+plt.plot(t_vals, v_vals, 'o-', label='Método de Euler', color='blue')
+plt.plot(t_vals, v_exacta, '-', label='Solución Analítica', color='green')
+plt.title('Caída libre con resistencia del aire')
+plt.xlabel('Tiempo (s)')
+plt.ylabel('Velocidad (m/s)')
+plt.grid(True)
+plt.legend()
+plt.savefig('caida_libre_euler_vs_analitica.png')
+plt.show()
